@@ -1,4 +1,6 @@
 # Mapping of SNP with G4-quadruplexes
+The G4Hunter code for python can be found in an independent repository at https://github.com/AnimaTardeb/G4Hunter.git
+
 - [Requirments](#requirments)
 - [Data Entry](#data-entry)
 - [Instructions](#instructions)
