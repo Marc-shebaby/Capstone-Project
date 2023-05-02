@@ -38,7 +38,7 @@ import os, sys
 import shutil
 import re
 import numpy as np
-from new_fix import main,Soft # imports the function of the G4Hunter tool
+from G4Hunter import main,Soft # imports the function of the G4Hunter tool
 ```
 # Functions 
  
