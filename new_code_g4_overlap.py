@@ -85,7 +85,7 @@ def get_result(pos_of_mut,x,g,index):
                        if destination<use:
                             if use-destination+3 >=len(l):
                               print("*The sequence that contains the SNP is: "+ l[use-destination-2]+l[use-destination-1]+ "{!r}".format(l[use-destination]))
-                          else:
+                            else:
                               print("*The sequence that contains the SNP is: "+ l[use-destination-2]+l[use-destination-1]+ "{!r}".format(l[use-destination])+l[use-destination+1]+l[use-destination+2]+l[use-destination+3])
                      
                        elif destination>use:
@@ -114,7 +114,7 @@ def get_result(pos_of_mut,x,g,index):
                        if destination<use:
                             if use+destination+3 >= len(l):
                                 print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination]))
-                           else:
+                            else:
                                 print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination])+l[use+destination+1]+l[use+destination+2]+l[use+destination+3])
                        
                        elif destination>use:
