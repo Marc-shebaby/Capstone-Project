@@ -83,8 +83,11 @@ def get_result(pos_of_mut,x,g,index):
                        use=i-1
                        
                        if destination<use:
-                          
-                           print("*The sequence that contains the snp is: "+ l[use-destination-2]+l[use-destination-1]+ "{!r}".format(l[use-destination])+l[use-destination+1]+l[use-destination+2]+l[use-destination+3])
+                            if use-destination+3 >=len(l):
+                              print("*The sequence that contains the SNP is: "+ l[use-destination-2]+l[use-destination-1]+ "{!r}".format(l[use-destination]))
+                          else:
+                              print("*The sequence that contains the SNP is: "+ l[use-destination-2]+l[use-destination-1]+ "{!r}".format(l[use-destination])+l[use-destination+1]+l[use-destination+2]+l[use-destination+3])
+                     
                        elif destination>use:
                            back_l=m
                            destination=destination-(use-1) 
@@ -95,17 +98,25 @@ def get_result(pos_of_mut,x,g,index):
                                back_l=back_l-1
                            get_seq=li[back_l].strip()
                            gt_ln=len(get_seq)-destination
-                           print("*The sequence that conatains the snp is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
+                           if gt_ln+3>=len(get_seq):
+                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1])
+                           else:
+                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
+                         
                        elif destination==use:
                            back_l=m
                            back_l=back_l-1
                            get_seq=li[back_l].strip()
-                           print("*The sequence that conatains the snp is: "+get_seq[len(get_seq)-4]+get_seq[len(get_seq)-3]+get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
+                           print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4]+get_seq[len(get_seq)-3]+get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
                    elif destination>0:
                        distance=distance+destination
                        use=i-1
                        if destination<use:
-                           print("*The sequence that contains the snp is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination])+l[use+destination+1]+l[use+destination+2]+l[use-destination+3])
+                            if use+destination+3 >= len(l):
+                                print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination]))
+                           else:
+                                print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination])+l[use+destination+1]+l[use+destination+2]+l[use+destination+3])
+                       
                        elif destination>use:
                            for_w=m
                            destination=destination-((use-2) +1)   
@@ -115,15 +126,18 @@ def get_result(pos_of_mut,x,g,index):
                                for_w=for_w+1
                            get_seq=li[for_w].strip()                 
                            gt_ln=len(get_seq)+destination                     
-                           print("*The sequence that contains the snp is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
+                           if gt_ln+3>=len(get_seq):
+                               print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]) 
+                           else:
+                               print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
                        elif destination==use:
                            for_w=m
                            for_w=back_l+1
                            get_seq=li[for_w].strip()
-                           print("*The sequence that contains the snp is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
+                           print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
                else:
                    if i+1>=len(l):
-                        print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
+                        print("*The sequence that contains the SNP is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
                    else:
                         print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i],l[i+1])
                    
