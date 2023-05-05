@@ -12,13 +12,6 @@ from G4Hunter import main,Soft
 
 #!/bin/py
 
-
-
-'''#######################################################
-2 functions below used to check if a base pair is intronic (small_letter) or exonic (capital_letter)
-'''
-
-
 '''#######################################################'''
 
 '''#######################################################
