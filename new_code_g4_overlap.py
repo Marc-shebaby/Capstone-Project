@@ -122,7 +122,11 @@ def get_result(pos_of_mut,x,g,index):
                            get_seq=li[for_w].strip()
                            print("*The sequence that contains the snp is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
                else:
-                   print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i],l[i+1])
+                   if i+1>=len(l):
+                        print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
+                   else:
+                        print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i],l[i+1])
+                   
                break
        if exon == pos_of_mut:
                break
