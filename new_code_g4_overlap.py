@@ -194,8 +194,7 @@ def read_g(s,file,df):
                     get_name=size[0]
                     namee=get_name[1:]
                     
-                    
-                    print("\n",namee,":")
+                    print("\n"," The G4 sequences for ",namee,":")
                 
                  
                 elif "Start" not in size[0]:
@@ -451,7 +450,8 @@ the code below converts the fasta files into txt files and calls get_result()
       
         if os.path.isfile(file_path):
             gene=new_filename.replace('.txt','')
-            print("\n--Results for the ",gene, " gene: ")
+            print("\n-- SNP location Results for the ",gene, " gene: ")
+           
      
 
             for index, value in enumerate  (gene_dic[gene]):
