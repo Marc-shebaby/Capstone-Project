@@ -22,58 +22,30 @@ def get_result(pos_of_mut,x,g,index):
    distance=0 # distance is incremented when start codon is found
    exon=0 # exon is incremented for each capital letter that is found after the start codon
    dist_start_codon=0
-   
-   
    for m,l in enumerate (li):
-     
-        
-       for i,k in enumerate (l[0:50]):
-           
-           if (k.isupper() and exon <pos_of_mut):
-              
-             
-               if ("ATG"  in l) and check==0:
-                   if i==49:
-                       check=check+1
-               
-                       
-                   if l.find("ATG")<i:
-                       exon=exon+1
-                       
-                       
-                       distance=distance+1
-                   if l.find("ATG")>i:
-                       dist_start_codon=dist_start_codon+1
-                       
-               
-               elif check >0:
-                   exon=exon+1
-                   distance=distance+1
-               elif ('ATG' not in l and check==0):     
-                   dist_start_codon=dist_start_codon+1
-           elif (k.islower() and check ==0):
-               if ("ATG"  in l):
-                  
-                   if i==49:
-                       check=check+1
-                  
-                   if l.find("ATG")<i:
-                       
-                       distance=distance+1
-                   if l.find("ATG")>i:
-                       dist_start_codon=dist_start_codon+1
-                       
-               elif ('ATG' not in l and check==0):
-                   dist_start_codon=dist_start_codon+1
-                   
-                  
-                  
-           elif (exon< pos_of_mut and k.islower() and check>0):
-              
-              
-               distance=distance+1
-           if exon==pos_of_mut:
-               if x!='':
+    for i,k in enumerate (l[0:]):
+            if(exon<pos_of_mut):
+                if ("ATG"  in l) and check==0:
+                    if l.find("ATG")>i:
+                        dist_start_codon=dist_start_codon+1
+                    elif l.find("ATG")<i:
+                        if (k.isupper()):
+                            exon=exon+1
+                        check=1
+                        distance=distance+1
+                elif ("ATG" in l) and check==1:
+                    if (k.isupper()):
+                        exon=exon+1
+                    distance=distance+1
+                elif check==0:
+                    dist_start_codon=dist_start_codon+1
+                elif check==1:
+                    if (k.isupper()):
+                        exon=exon+1
+                    distance=distance+1
+            
+            if exon==pos_of_mut:
+                if x!='':
                    
                    destination=x # user can inputs distance to go backwards after reaching the first destination 
                    destination=int(destination)
@@ -90,11 +62,11 @@ def get_result(pos_of_mut,x,g,index):
                      
                        elif destination>use:
                            back_l=m
-                           destination=destination-(use-1) 
+                           destination=destination-(use-1) #subtracting the index reached from destination
                            back_l=back_l-1
                       
-                           while(destination>50):
-                               destination=destination-50
+                           while(destination> len(l)):
+                               destination=destination-len(l)
                                back_l=back_l-1
                            get_seq=li[back_l].strip()
                            gt_ln=len(get_seq)-destination
@@ -119,10 +91,10 @@ def get_result(pos_of_mut,x,g,index):
                        
                        elif destination>use:
                            for_w=m
-                           destination=destination-((use-2) +1)   
+                           destination=destination-(len(l)-(use-1)) # len(l)-(use-1): subtracting the index reached from the size of the current line to obtain the number of bases that will be traveled after moving forward on the line.
                            for_w=for_w+1
-                           while(destination>50):
-                               destination=destination-50
+                           while(destination>len(l)):
+                               destination=destination-len(l)
                                for_w=for_w+1
                            get_seq=li[for_w].strip()                 
                            gt_ln=len(get_seq)+destination                     
@@ -135,20 +107,19 @@ def get_result(pos_of_mut,x,g,index):
                            for_w=back_l+1
                            get_seq=li[for_w].strip()
                            print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
-               else:
+                else:
                    if i+1>=len(l):
                         print("*The sequence that contains the SNP is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
                    else:
                         print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i],l[i+1])
-                   
+                break
+    if exon == pos_of_mut:
                break
-       if exon == pos_of_mut:
-               break
-
+   # outside the for loops
    dist_start_codon=str(dist_start_codon)
-   if index==0:
+   if index==0: # for the first SNP of the gene
        
-       gene_dic[g+"_"+dist_start_codon]=gene_dic[g]
+       gene_dic[g+"_"+dist_start_codon]=gene_dic[g] # change the key to include the distnace of the start codon
        del(gene_dic[g])
    gene_dic[g+"_"+dist_start_codon][index]=gene_dic[g+"_"+dist_start_codon][index]+(distance,) # in here the key value would be a combination of the gene's name and the distance of its start codon (example: key=CYP_1200)
 
@@ -160,7 +131,7 @@ def get_result(pos_of_mut,x,g,index):
 '''#######################################################
 #Getting distance for G4 sequences of each gene
 '''
-def read_g(s,file,df):
+def read_g(s,file,df): # s= number of lines in the g4 file, file= path of the file, df=dataframe
     
     g4=file
     if os.path.exists(g4):
@@ -170,16 +141,16 @@ def read_g(s,file,df):
         
         cypg_reader = csv.reader(file_g, delimiter='\t')
         store={} #stores the end position of each g4 sequence as key and their start position as their values
-        namee=""
+        namee="" #name of the gene
         matching_key=""
         
         for i,size in enumerate (cypg_reader):
             #for n,e in enumerate (size):
             
-                if ">" in size[0]: # include a ">" in the seqnames for only the fist appearance of a gene in the G4 txt file
+                if ">" in size[0]: 
                     if len(store)!=0:
                         
-                        namee=namee.strip()
+                        namee=namee.strip() # in case of white spaces
                         # extracting the keys of the dictionary as a numpy array of strings
                         keys = np.array(list(gene_dic.keys()))
                         
@@ -191,8 +162,8 @@ def read_g(s,file,df):
                             get_best(start_codon,matching_key,store,df,namee)
                             store={}
                         
-                    get_name=size[0]
-                    namee=get_name[1:]
+                    get_name=size[0] 
+                    namee=get_name[1:] #name of the gene
                     
                     print("\n"," The G4 sequences for ",namee,":")
                 
@@ -215,7 +186,7 @@ def read_g(s,file,df):
             
         file_g.close()
         
-def get_best(start_codon,k,store,df,gene_name):
+def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the start codon, k:key, df: dataframe and gene_name
     start_codon=int(start_codon)
    
     distance=0
@@ -469,7 +440,8 @@ the code below converts the fasta files into txt files and calls get_result()
                 fasta_file.close()
         else:  
          print("path doesnt exist") 
-
+    
+    # converting back to fasta
     files= os.listdir(user_input)
     os.chdir(user_input)
         
@@ -492,14 +464,14 @@ the code below converts the fasta files into txt files and calls get_result()
         data = []
         number_line=0
         current_gene = None
-        with open(G_overlap) as f:
+        with open(G_overlap) as f: #to convert the file of the G4Hunter to a dataframe
             for line in f:
                 number_line=number_line+1
                 if line.startswith('>'):
                     current_gene = line.strip().lstrip('>')
                 elif current_gene:
                      fields = line.strip().split('\t')
-                     if len(fields) <= 6 and 'Start' not in fields[0]:
+                     if 'Start' not in fields[0]:
                         start = int(fields[0])
                         end = int(fields[1])
                         sequence = fields[2]
