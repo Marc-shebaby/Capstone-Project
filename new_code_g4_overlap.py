@@ -121,7 +121,7 @@ def get_result(pos_of_mut,x,g,index):
        
        gene_dic[g+"_"+dist_start_codon]=gene_dic[g] # change the key to include the distnace of the start codon
        del(gene_dic[g])
-   gene_dic[g+"_"+dist_start_codon][index]=gene_dic[g+"_"+dist_start_codon][index]+(distance,) # in here the key value would be a combination of the gene's name and the distance of its start codon (example: key=CYP_1200)
+   gene_dic[g+"_"+dist_start_codon][index]=gene_dic[g+"_"+dist_start_codon][index]+(distance,) # the distance is added to the tuple corresponding to the SNP
 
    return distance
 '''#######################################################'''
@@ -170,7 +170,7 @@ def read_g(s,file,df): # s= number of lines in the g4 file, file= path of the fi
                  
                 elif "Start" not in size[0]:
                     
-                    store[int(size[1])]=int(size[0])
+                    store[int(size[1])]=int(size[0]) # end is the key and start is the value
                     
                     
                 
@@ -186,15 +186,15 @@ def read_g(s,file,df): # s= number of lines in the g4 file, file= path of the fi
             
         file_g.close()
         
-def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the start codon, k:key, df: dataframe and gene_name
+def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the start codon, k:key, store: dictionary ,df: dataframe and gene_name
     start_codon=int(start_codon)
    
     distance=0
     
     computed_dis=[]
-    dis_dic={}
+    dis_dic={} #
       
-    for G in store: # obtaining the distance of G4 complexes relative to the start codon and storing them in a dictionary (start= second column value in G4Hunter file)
+    for G in store: # obtaining the distance of G4 complexes relative to the start codon and storing them in a dictionary
        
         if G< start_codon: # if the G sequence is found upstream from the start codon
             distance=-(start_codon-G)
@@ -204,28 +204,31 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
             distance=G-start_codon
             dis_dic[distance]=store[G]
            
-    temp_dictionary={}
-
+ 
+    df["distance_btw_snp"] = None  #new column in dataframe to store distance between G4 and SNP
     
-    
-    for t in gene_dic[k]: # computing distance between G4 complexes and snp distances from previous code to extract the closest distance.
+     # computing distance between G4 complexes and snp distances from previous code to extract the closest distance.
+    for t in gene_dic[k]: # looping through the SNPS of the indexed gene
         computed_dis=[]
+        
         for g in dis_dic:  
             if g<t[3]:  
                 if g<0 and t[3]>0: #case if g4_sequence is upstream from the start codon
                         distance=t[3]+abs(g)
                         computed_dis.append(distance)
-                        temp_dictionary[distance]=dis_dic[g]
+                        df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                     
                 elif g<0 and t[3]<0:  #case if g4_sequence and SNP are upstream from the start codon
                         distance=abs(g)-abs(t[3])
                         computed_dis.append(distance)
-                        temp_dictionary[distance]=dis_dic[g]
+                        df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                     
                 
                 else:
                     distance=t[3]-g
                     computed_dis.append(distance)
-                    temp_dictionary[distance]=dis_dic[g]
-                    
+                    df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                
                     
             else:
                 if g>0:
@@ -233,35 +236,39 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
                     if t[3]<0:
                         distance=abs(t[3])+g4_start
                         computed_dis.append(distance)
-                        temp_dictionary[distance]=dis_dic[g]
+                        df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                      
                 
                     else:
                         if t[3]>g4_start:
                             distance=0
                             computed_dis.append(distance)
-                            temp_dictionary[distance]=dis_dic[g]
+                            df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                           
                         else:  
                             distance=g4_start-t[3]
                             computed_dis.append(distance)
-                            temp_dictionary[distance]=dis_dic[g]
+                            df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                          
                 elif t[3]<0 and g<0:
                     g4_start=start_codon-dis_dic[g]
 
                     distance=abs(t[3])-abs(g4_start)
                     computed_dis.append(distance)
-                    temp_dictionary[distance]=dis_dic[g]
+                    df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
+                 
         
         best=min(computed_dis)
         if t[1]=="":
             if best !=0:
-               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['Start']==temp_dictionary[best])].iloc[:,1:].to_string(index=False))
+               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
             else:
-               print("-This G4 sequence overlaps with the SNP (c",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['Start']==temp_dictionary[best])].iloc[:,1:].to_string(index=False))
+               print("-This G4 sequence overlaps with the SNP (c",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
         else:
            if best !=0:
-               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['Start']==temp_dictionary[best])].iloc[:,1:].to_string(index=False))
+               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
            else:
-               print("-This G4 sequence overlaps with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['Start']==temp_dictionary[best])].iloc[:,1:].to_string(index=False))
+               print("-This G4 sequence overlaps with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
     '''#######################################################
     End of get_best() 
     #######################################################'''
