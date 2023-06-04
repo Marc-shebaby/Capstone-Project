@@ -47,7 +47,7 @@ def get_result(pos_of_mut,x,g,index):
             if exon==pos_of_mut:
                 if x!='':
                    
-                   destination=x # user can inputs distance to go backwards after reaching the first destination 
+                   destination=x 
                    destination=int(destination)
                    if destination <0:
                        destination=abs(destination)
@@ -192,7 +192,7 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
     distance=0
     
     computed_dis=[]
-    dis_dic={} #
+    dis_dic={} # distance between G sequence and start codon as key, value is start of the g sequence
       
     for G in store: # obtaining the distance of G4 complexes relative to the start codon and storing them in a dictionary
        
