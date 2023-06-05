@@ -28,7 +28,7 @@ def get_result(pos_of_mut,x,g,index):
                 if ("ATG"  in l) and check==0:
                     if l.find("ATG")>i:
                         dist_start_codon=dist_start_codon+1
-                    elif l.find("ATG")<i:
+                    elif l.find("ATG")<=i:
                         if (k.isupper()):
                             exon=exon+1
                         check=1
@@ -52,7 +52,7 @@ def get_result(pos_of_mut,x,g,index):
                    if destination <0:
                        destination=abs(destination)
                        distance=distance-destination
-                       use=i-1
+                       use=i
                        
                        if destination<use:
                             if use-destination+3 >=len(l):
@@ -62,7 +62,7 @@ def get_result(pos_of_mut,x,g,index):
                      
                        elif destination>use:
                            back_l=m
-                           destination=destination-(use-1) #subtracting the index reached from destination
+                           destination=destination-(use+1) #subtracting the index reached from destination
                            back_l=back_l-1
                       
                            while(destination> len(l)):
@@ -71,9 +71,9 @@ def get_result(pos_of_mut,x,g,index):
                            get_seq=li[back_l].strip()
                            gt_ln=len(get_seq)-destination
                            if gt_ln+3>=len(get_seq):
-                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1])
+                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-3]+get_seq[gt_ln-2]+"\"%s\""%get_seq[gt_ln-1]+get_seq[gt_ln])
                            else:
-                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
+                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-3]+get_seq[gt_ln-2]+"\"%s\""%get_seq[gt_ln-1]+get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln+2])
                          
                        elif destination==use:
                            back_l=m
@@ -82,31 +82,31 @@ def get_result(pos_of_mut,x,g,index):
                            print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4]+get_seq[len(get_seq)-3]+get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
                    elif destination>0:
                        distance=distance+destination
-                       use=i-1
+                       use=i
                        if destination<use:
                             if use+destination+3 >= len(l):
-                                print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination]))
+                                print("*The sequence that contains the SNP is: "+ l[use+destination-3]+l[use+destination-2]+ "{!r}".format(l[use+destination-1]))
                             else:
-                                print("*The sequence that contains the SNP is: "+ l[use+destination-2]+l[use+destination-1]+ "{!r}".format(l[use+destination])+l[use+destination+1]+l[use+destination+2]+l[use+destination+3])
+                                print("*The sequence that contains the SNP is: "+ l[use+destination-3]+l[use+destination-2]+ "{!r}".format(l[use+destination-1])+l[use+destination]+l[use+destination+1]+l[use+destination+2])
                        
                        elif destination>use:
                            for_w=m
-                           destination=destination-(len(l)-(use-1)) # len(l)-(use-1): subtracting the index reached from the size of the current line to obtain the number of bases that will be traveled after moving forward on the line.
+                           destination=destination-(len(l)-use) # len(l)-(use): subtracting the index reached from the size of the current line to obtain the number of bases that will be traveled after moving forward on the line.
                            for_w=for_w+1
                            while(destination>len(l)):
                                destination=destination-len(l)
                                for_w=for_w+1
                            get_seq=li[for_w].strip()                 
-                           gt_ln=len(get_seq)+destination                     
+                           gt_ln=destination                     
                            if gt_ln+3>=len(get_seq):
-                               print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]) 
+                               print("*The sequence that contains the SNP is: "+"\"%s\""%get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln]+get_seq[gt_ln+2]+get_seq[gt_ln+3]) 
                            else:
-                               print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+get_seq[gt_ln]+"\"%s\""%get_seq[gt_ln+1]+get_seq[gt_ln+2]+get_seq[gt_ln+3])
+                               print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+"\"%s\""%get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln+2])
                        elif destination==use:
                            for_w=m
                            for_w=back_l+1
                            get_seq=li[for_w].strip()
-                           print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq)-1])
+                           print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq-1)])
                 else:
                    if i+1>=len(l):
                         print("*The sequence that contains the SNP is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
