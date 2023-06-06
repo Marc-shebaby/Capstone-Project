@@ -168,13 +168,13 @@ def read_g(s,file,df): # s= number of lines in the g4 file, file= path of the fi
                     print("\n"," The G4 sequences for ",namee,":")
                 
                  
-                elif "Start" not in size[0]:
+                elif "Start" not in size[0]: #to skip the line with column names
                     
                     store[int(size[1])]=int(size[0]) # end is the key and start is the value
                     
                     
                 
-                if i==s:
+                if i==s: #to call get_best for the last gene
                     namee=namee.strip()
                     keys = np.array(list(gene_dic.keys()))
                 
