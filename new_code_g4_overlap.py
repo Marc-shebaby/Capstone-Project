@@ -7,8 +7,9 @@ import pandas as pd
 import re
 import numpy as np
 from G4Hunter import main,Soft
-
-
+import requests
+from Bio import Seq,Entrez
+import requests
 
 #!/bin/py
 
@@ -22,27 +23,28 @@ def get_result(pos_of_mut,x,g,index):
    distance=0 # distance is incremented when start codon is found
    exon=0 # exon is incremented for each capital letter that is found after the start codon
    dist_start_codon=0
+   CDS_loc=gene_dic[g][-1] # position of the start codon
+   CDS=0
    for m,l in enumerate (li):
     for i,k in enumerate (l[0:]):
             if(exon<pos_of_mut):
-                if ("ATG"  in l) and check==0:
-                    if l.find("ATG")>i:
-                        dist_start_codon=dist_start_codon+1
-                    elif l.find("ATG")<=i:
-                        if (k.isupper()):
-                            exon=exon+1
-                        check=1
-                        distance=distance+1
-                elif ("ATG" in l) and check==1:
-                    if (k.isupper()):
-                        exon=exon+1
-                    distance=distance+1
-                elif check==0:
-                    dist_start_codon=dist_start_codon+1
-                elif check==1:
-                    if (k.isupper()):
-                        exon=exon+1
-                    distance=distance+1
+                if k.isupper() and check==0 and CDS<CDS_loc:
+                    CDS+=1
+                    dist_start_codon+=1
+                elif k.islower() and check==0:
+                    dist_start_codon+=1
+                elif k.isupper and check!=0:
+                    exon+=1
+                    distance+=1
+                elif k.islower() and check!=0:
+                    distance+=1
+                elif CDS==CDS_loc:
+                    dist_start_codon=-1
+                    exon=exon+2
+                    distance=distance+2
+                    check=1
+
+            
             
             if exon==pos_of_mut:
                 if x!='':
@@ -109,9 +111,9 @@ def get_result(pos_of_mut,x,g,index):
                            print("*The sequence that contains the SNP is: "+get_seq[len(get_seq)-4],get_seq[len(get_seq)-3],get_seq[len(get_seq)-2]+"\"%s\""%get_seq[len(get_seq-1)])
                 else:
                    if i+1>=len(l):
-                        print("*The sequence that contains the SNP is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i])
+                        print("*The sequence that contains the SNP is: ",l[i-4],l[i-3],l[i-2], l[i-1],"\"%s\""%l[i])
                    else:
-                        print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2],"\"%s\""% l[i-1],l[i],l[i+1])
+                        print("*The sequence that contains the snp is: ",l[i-4],l[i-3],l[i-2], l[i-1],"\"%s\""%l[i],l[i+1])
                 break
     if exon == pos_of_mut:
                break
@@ -272,7 +274,117 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
     '''#######################################################
     End of get_best() 
     #######################################################'''
+# In this part of the code the UCSC Genomic browser API is used
+# three functions to retrieve the sequences of genes
 
+
+def get_gene(gene_name):
+    url = f"https://api.genome.ucsc.edu/getData/track?track=knownGene&genome=hg38"
+    response = requests.get(url)
+    data = response.json()
+    
+    if 'error' in data:
+        print("Error:", data['error'])
+        return None
+    
+    
+    gene_info = data['knownGene']# obtaining a list of dictionaries
+
+    df= pd.DataFrame(gene_info)
+    filter_gene=df[(df["geneName"]==gene_name)&(df["rank"]==1)].iloc[0]
+
+    chrom=filter_gene['chrom'] #get chromosome
+    strand=filter_gene['strand'] # + or - strand
+    start=filter_gene['chromStart']
+    end=filter_gene['chromEnd']
+    # get transcript name
+    transcript=filter_gene['name']
+    exon_loc=filter_gene['chromStarts'].split(',') #convert the value of string into a list
+    exon_sizes=filter_gene['blockSizes'].split(',')
+  
+
+    return chrom,strand,start,end,exon_loc,exon_sizes,transcript
+
+
+def get_coding_strand(genome,start,end,chrom,strand,exon_loc,exon_sizes,gene_name,path):
+    if strand=="-":
+        url = f"https://api.genome.ucsc.edu/getData/sequence?genome={genome};start={start};end={end+1000};chrom={chrom}"
+        response = requests.get(url)
+        data = response.json()
+        seq_object = Seq.Seq(data['dna']) #getting the sequence of the positive strand
+        final_seq=fix_bases(seq_object,exon_loc,exon_sizes,strand)
+        final_seq="".join(final_seq)
+        final_seq=Seq.Seq(final_seq)
+        reverse_complement = final_seq.reverse_complement() #getting the negative strand (coding)
+        reverse_complement="".join(reverse_complement)
+        result=""
+        for i in range(0, len(reverse_complement), 50):
+            result += reverse_complement[i:i+50] + "\n"
+        with open( f"{path}/{gene_name}.fasta", "w") as file:
+            gene_=">"+gene_name
+            file.write(gene_+"\n")
+            file.write(result)
+    else:
+         url = f"https://api.genome.ucsc.edu/getData/sequence?genome={genome};start={start-1000};end={end};chrom={chrom}"
+         response = requests.get(url)
+         data = response.json()
+         seq_object = Seq.Seq(data['dna']) #getting the sequence of the positive strand
+         final_seq=fix_bases(seq_object,exon_loc,exon_sizes,strand)
+         final_seq="".join(final_seq)
+         result=""
+         for i in range(0, len(final_seq), 50):
+            result += final_seq[i:i+50] + "\n"
+         with open( f"{path}/{gene_name}.fasta", "w") as file:
+            gene_=">"+gene_name
+            file.write(gene_+"\n")
+            file.write(result)
+   
+def fix_bases(seq,exon_loc,exon_sizes,strand):
+    seq=seq.lower()
+    seq_1000_before=0
+    rest_seq=0
+    if strand=="+":
+        seq_1000_before=seq[:1000] # the first 1000 base pairs upstream the promoter are kept as lower case
+        rest_seq=list(seq[1000:])
+      
+    else:
+        rest_seq=list(seq)
+
+    for i,c in enumerate(exon_loc):
+         if i<len(exon_loc)-1:
+            rest_seq[int(c):int(c)+int(exon_sizes[i])] = "".join(rest_seq[int(c):int(c)+int(exon_sizes[i])]).upper()#exons should be in capital letters
+    if seq_1000_before!=0:
+          seq=seq_1000_before+"".join(rest_seq)
+    else:
+        seq="".join(rest_seq)
+
+    return seq
+
+# fetch_cds_from_ncbi uses Entrez API to retrieve the position of the CDS (start codon)
+def fetch_cds_from_ncbi(transcript_id,gene):
+    Entrez.email = 'marcshababy02@gmail.com'  # Provide your email address
+    handle = Entrez.esearch(db='nucleotide',term=transcript_id)
+
+    record = Entrez.read(handle)
+    print(handle)
+    print(record["IdList"])
+    handle.close()
+
+    fetch_handle = Entrez.efetch(db='nucleotide',id=record["IdList"][0],rettype="gb")
+    record=fetch_handle.read()
+    indx=record.find("CDS")
+    CDS=record[indx:indx+25]
+    CDS=CDS.replace(" ","")
+    match = re.search(r'\d+',CDS)
+    fetch_handle.close()
+    first_number=""
+    if match:
+        first_number = match.group()
+        first_number=first_number.strip() # remove any spaces
+        first_number=int(first_number)
+    return first_number
+
+# End of functions
 
 
 '''#######################################################
@@ -282,6 +394,8 @@ if __name__ == "__main__":
     try:
     
         inputrepository, outputrepository, window, score = main(sys.argv[1:]) # sys.argv is a list in Python that contains the command-line arguments passed to the script, and sys.argv[1:] slices the list to exclude the first argument (the script name). The resulting values returned by main() are being unpacked into the variables inputfile, outputfile, window, and score.
+      
+
         fname=inputrepository.split("/")[-1]
         name=fname.split(".")
     except ValueError:
@@ -301,14 +415,16 @@ name of gene:[(snp, distance to go backwards or forwards ?,variation)]
     table=input("Enter folder path for table.csv:") 
     with open(table, newline='') as csvfile:
         # Create a CSV reader object
-        csvreader = csv.reader(csvfile, delimiter=',')
-
-    # Iterate over each row in the CSV file
-        for row in csvreader:
+       genes=[]
+       
+       csvreader=csv.reader(csvfile, delimiter=',')
+       # Iterate over each row in the CSV file
+       for row in csvreader:
         # Process the row data
             gene_snps= filter(lambda cell: cell.strip() != '', row) # every row contains gene name and all its SNPs
  
             gene_snps=list(gene_snps) # converts filter object to list
+            genes.append(gene_snps[0])
        
             for index, snp in enumerate(gene_snps): #loop over every row to extract the snp positions.
                 if index!=0:
@@ -324,12 +440,16 @@ name of gene:[(snp, distance to go backwards or forwards ?,variation)]
                             gene_dic[gene_snps[0]].append((group1,group2,group3))
                         else:
                             gene_dic[gene_snps[0]].append((group1,group2,group3))
+           
                         '''#######################################################'''
-    
-
-    
-
-   
+        
+# calling the api function #
+    for gene_name in genes:
+        chrom,strand,start,end,exon_loc,exon_sizes,transcript=get_gene(gene_name)
+        get_coding_strand('hg38',start,end,chrom,strand,exon_loc,exon_sizes,gene_name,inputrepository)
+        gene_dic[gene_name].append(transcript)
+        cds=fetch_cds_from_ncbi(transcript)
+        gene_dic[gene_name].append(cds)
 
     '''#######################################################'''
 
@@ -392,18 +512,14 @@ This part below of the code creates a directory where the results for G4 hunter 
         Res2file.close() 
     '''#######################################################
     end of tool
-    '''
-    
-    '''#######################################################
-the code below converts the fasta files into txt files and calls get_result()
+
+    '''######################################################
 
 # Iterate over the list of files
-'''
+
     results=[]
-    user_input=inputrepository
-    
-    files= os.listdir(user_input)
-    os.chdir(user_input)
+    files= os.listdir(inputrepository)
+    os.chdir(inputrepository)
     
     
     for file in files:
@@ -424,7 +540,7 @@ the code below converts the fasta files into txt files and calls get_result()
 
 
   # Construct the full file path
-        file_path = os.path.join(user_input, new_filename)   
+        file_path = os.path.join(inputrepository, new_filename)  
       
         if os.path.isfile(file_path):
             gene=new_filename.replace('.txt','')
@@ -433,24 +549,26 @@ the code below converts the fasta files into txt files and calls get_result()
      
 
             for index, value in enumerate  (gene_dic[gene]):
-                fasta_file=open(file_path,"r")
-                skip_header=fasta_file.readline()
-                li=fasta_file.readlines()
-                li = [line.replace('\n', '') for line in li]
-                if value[1]=="":
-                     print("\n** snp c.",value[0].strip(),value[2].strip(),": ")
-                else:
-                     print("\n** snp c.",value[0].strip(),value[1].strip(),value[2].strip(),":")
+                if index < len(gene_dic[gene])-1: # last index in the value is not a SNP
+            
+                    fasta_file=open(file_path,"r")
+                    skip_header=fasta_file.readline()
+                    li=fasta_file.readlines()
+                    li = [line.replace('\n', '') for line in li]
+                    if value[1]=="":
+                        print("\n** snp c.",value[0].strip(),value[2].strip(),": ")
+                    else:
+                        print("\n** snp c.",value[0].strip(),value[1].strip(),value[2].strip(),":")
               
-                print("Distance between the snp and start codon is:",get_result(int(value[0]),value[1],gene,index),"base pairs")
+                    print("Distance between the snp and start codon is:",get_result(int(value[0]),value[1],gene,index),"base pairs")
           
-                fasta_file.close()
+                    fasta_file.close()
         else:  
          print("path doesnt exist") 
     
     # converting back to fasta
-    files= os.listdir(user_input)
-    os.chdir(user_input)
+    files= os.listdir(inputrepository)
+    os.chdir(inputrepository)
         
     for filename in files:
         fasta=".fasta"
