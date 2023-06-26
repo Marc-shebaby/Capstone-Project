@@ -18,31 +18,32 @@ import requests
 '''#######################################################
 get_result(position of snp in cDna, x=distance to go backward or forward, g=gene name, index specifies which snp of the gene is being computed) function computes the genomic distance of a snp. 
 '''
-def get_result(pos_of_mut,x,g,index): 
+def get_result(pos_of_mut,x,g,index,cds_loc): 
    check=0 # used as a flag to indicate that the start codon was found in the file
    distance=0 # distance is incremented when start codon is found
    exon=0 # exon is incremented for each capital letter that is found after the start codon
    dist_start_codon=0
-   CDS_loc=gene_dic[g][-1] # position of the start codon
+   
    CDS=0
    for m,l in enumerate (li):
     for i,k in enumerate (l[0:]):
             if(exon<pos_of_mut):
-                if k.isupper() and check==0 and CDS<CDS_loc:
+                if k.isupper() and check==0 and CDS<cds_loc:
                     CDS+=1
                     dist_start_codon+=1
                 elif k.islower() and check==0:
                     dist_start_codon+=1
-                elif k.isupper and check!=0:
+                elif k.isupper() and check!=0:
                     exon+=1
                     distance+=1
                 elif k.islower() and check!=0:
                     distance+=1
-                elif CDS==CDS_loc:
-                    dist_start_codon=-1
+                elif CDS==cds_loc:
+                    dist_start_codon-=1
                     exon=exon+2
                     distance=distance+2
                     check=1
+                    print(l, " in hereeee ",l[i-1] ,k,l[i+1])
 
             
             
@@ -210,7 +211,7 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
     df["distance_btw_snp"] = None  #new column in dataframe to store distance between G4 and SNP
     
      # computing distance between G4 complexes and snp distances from previous code to extract the closest distance.
-    for t in gene_dic[k]: # looping through the SNPS of the indexed gene
+    for i, t in enumerate(gene_dic[k][0:len(gene_dic[k])-1]): # looping through the SNPS of the indexed gene
         computed_dis=[]
         
         for g in dis_dic:  
@@ -259,18 +260,18 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
                     computed_dis.append(distance)
                     df.loc[df['Start'] == dis_dic[g],'distance_btw_snp']=distance
                  
-        
+     
         best=min(computed_dis)
         if t[1]=="":
             if best !=0:
-               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+                print("-The G4 sequence that has the closest distance of ",best," with the SNP (c",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
             else:
-               print("-This G4 sequence overlaps with the SNP (c",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+                print("-This G4 sequence overlaps with the SNP (c",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
         else:
-           if best !=0:
-               print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
-           else:
-               print("-This G4 sequence overlaps with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+            if best !=0:
+                print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+            else:
+                print("-This G4 sequence overlaps with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
     '''#######################################################
     End of get_best() 
     #######################################################'''
@@ -292,18 +293,20 @@ def get_gene(gene_name):
 
     df= pd.DataFrame(gene_info)
     filter_gene=df[(df["geneName"]==gene_name)&(df["rank"]==1)].iloc[0]
-
+  
+   
     chrom=filter_gene['chrom'] #get chromosome
     strand=filter_gene['strand'] # + or - strand
     start=filter_gene['chromStart']
     end=filter_gene['chromEnd']
-    # get transcript name
-    transcript=filter_gene['name']
     exon_loc=filter_gene['chromStarts'].split(',') #convert the value of string into a list
     exon_sizes=filter_gene['blockSizes'].split(',')
+    
   
 
-    return chrom,strand,start,end,exon_loc,exon_sizes,transcript
+  
+
+    return chrom,strand,start,end,exon_loc,exon_sizes
 
 
 def get_coding_strand(genome,start,end,chrom,strand,exon_loc,exon_sizes,gene_name,path):
@@ -361,14 +364,15 @@ def fix_bases(seq,exon_loc,exon_sizes,strand):
     return seq
 
 # fetch_cds_from_ncbi uses Entrez API to retrieve the position of the CDS (start codon)
-def fetch_cds_from_ncbi(transcript_id,gene):
+def fetch_cds_from_ncbi(gene_transcript):
     Entrez.email = 'marcshababy02@gmail.com'  # Provide your email address
-    handle = Entrez.esearch(db='nucleotide',term=transcript_id)
+    handle = Entrez.esearch(db='nucleotide',term=gene_transcript)
 
     record = Entrez.read(handle)
-    print(handle)
+    print(record, " this")
     print(record["IdList"])
     handle.close()
+   
 
     fetch_handle = Entrez.efetch(db='nucleotide',id=record["IdList"][0],rettype="gb")
     record=fetch_handle.read()
@@ -445,11 +449,38 @@ name of gene:[(snp, distance to go backwards or forwards ?,variation)]
         
 # calling the api function #
     for gene_name in genes:
-        chrom,strand,start,end,exon_loc,exon_sizes,transcript=get_gene(gene_name)
+        print(gene_name, " ru2")
+        chrom,strand,start,end,exon_loc,exon_sizes=get_gene(gene_name)
         get_coding_strand('hg38',start,end,chrom,strand,exon_loc,exon_sizes,gene_name,inputrepository)
-        gene_dic[gene_name].append(transcript)
-        cds=fetch_cds_from_ncbi(transcript)
+        transcript=url = f"https://api.genome.ucsc.edu/getData/track?track=refGene&genome=hg38"
+        response = requests.get(url)
+        data = response.json()
+        genes_transcripts = data['refGene'][chrom]# obtaining a list of dictionaries
+        # Convert values to integers and remove the last empty value
+        exon_loc= list(map(int, filter(None, exon_loc[:-1])))
+        
+        exon_sizes = list(map(int, filter(None, exon_sizes[:-1])))
+        exon_loc=np.array(exon_loc)
+        exon_sizes=np.array(exon_sizes)
+        exon_starts=np.add(exon_loc,start)
+        exon_start_plus=[exon_starts[0]+1]+list(exon_starts[1:])
+        exon_start_minus=[exon_starts[0]-1]+list(exon_starts[1:])
+        exon_ends=exon_starts+exon_sizes
+        
+        #exon_ends=[str(x) for x in exon_ends] + [''] # convert values back to string 
+        exon_starts=[str(x) for x in exon_starts] + ['']
+        exon_start_plus=[str(x) for x in exon_start_plus] + ['']
+        exon_start_minus=[str(x) for x in exon_start_minus] + ['']
+       
+
+        
+    
+        gene_transcript=[d for d in genes_transcripts if d['name2'] == gene_name and (d['exonStarts'].split(',')==exon_starts or d['exonStarts'].split(',')==exon_start_plus or d['exonStarts'].split(',')==exon_start_minus)  and 'NM' in d['name']]
+       
+        cds=fetch_cds_from_ncbi(gene_transcript[0]['name'])
+        
         gene_dic[gene_name].append(cds)
+      
 
     '''#######################################################'''
 
@@ -545,11 +576,10 @@ This part below of the code creates a directory where the results for G4 hunter 
         if os.path.isfile(file_path):
             gene=new_filename.replace('.txt','')
             print("\n-- SNP location Results for the ",gene, " gene: ")
-           
-     
-
+            last_indx=len(gene_dic[gene])-1 # index of last element
+            cds_loc=gene_dic[gene][last_indx]
             for index, value in enumerate  (gene_dic[gene]):
-                if index < len(gene_dic[gene])-1: # last index in the value is not a SNP
+                if index < last_indx: # last index in the value is not a SNP
             
                     fasta_file=open(file_path,"r")
                     skip_header=fasta_file.readline()
@@ -560,7 +590,7 @@ This part below of the code creates a directory where the results for G4 hunter 
                     else:
                         print("\n** snp c.",value[0].strip(),value[1].strip(),value[2].strip(),":")
               
-                    print("Distance between the snp and start codon is:",get_result(int(value[0]),value[1],gene,index),"base pairs")
+                    print("Distance between the snp and start codon is:",get_result(int(value[0]),value[1],gene,index,cds_loc),"base pairs")
           
                     fasta_file.close()
         else:  
