@@ -43,7 +43,7 @@ def get_result(pos_of_mut,x,g,index,cds_loc):
                     exon=exon+2
                     distance=distance+2
                     check=1
-                    print(l, " in hereeee ",l[i-1] ,k,l[i+1])
+                  
 
             
             
@@ -369,8 +369,7 @@ def fetch_cds_from_ncbi(gene_transcript):
     handle = Entrez.esearch(db='nucleotide',term=gene_transcript)
 
     record = Entrez.read(handle)
-    print(record, " this")
-    print(record["IdList"])
+    
     handle.close()
    
 
@@ -449,7 +448,7 @@ name of gene:[(snp, distance to go backwards or forwards ?,variation)]
         
 # calling the api function #
     for gene_name in genes:
-        print(gene_name, " ru2")
+      
         chrom,strand,start,end,exon_loc,exon_sizes=get_gene(gene_name)
         get_coding_strand('hg38',start,end,chrom,strand,exon_loc,exon_sizes,gene_name,inputrepository)
         transcript=url = f"https://api.genome.ucsc.edu/getData/track?track=refGene&genome=hg38"
