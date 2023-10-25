@@ -589,7 +589,7 @@ This part below of the code creates a directory where the results for G4 hunter 
                     else:
                         print("\n** snp c.",value[0].strip(),value[1].strip(),value[2].strip(),":")
               
-                    print("Distance between the SNP and the start codon is:",get_result(int(value[0]),value[1],gene,index,cds_loc),"base pairs")
+                    print("The computed Distance between the SNP and the start codon is:",get_result(int(value[0]),value[1],gene,index,cds_loc),"base pairs")
           
                     fasta_file.close()
         else:  
