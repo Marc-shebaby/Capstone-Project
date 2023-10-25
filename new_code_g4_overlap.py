@@ -264,9 +264,9 @@ def get_best(start_codon,k,store,df,gene_name): # start_codon: distance of the s
         best=min(computed_dis)
         if t[1]=="":
             if best !=0:
-                print("-The G4 sequence that has the closest distance of ",best," with the SNP (c",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+                print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
             else:
-                print("-This G4 sequence overlaps with the SNP (c",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
+                print("-This G4 sequence overlaps with the SNP (c.",t[0].strip(),t[2].strip(),"): \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
         else:
             if best !=0:
                 print("-The G4 sequence that has the closest distance of ",best," with the SNP (c.",t[0].strip(),t[1].strip(),t[2].strip(),") is: \n",df.loc[(df['Gene']==gene_name) & (df['distance_btw_snp']==best)].iloc[:,1:].to_string(index=False))
