@@ -21,7 +21,7 @@ The G4Hunter code for python can be found in an independent repository at https:
 >sudo pip install numpy
 2. Make sure each fasta file represents one whole gene and that all of the fasta files are in the same directory.
 3. Add the desired SNPs of the genes in a csv file as the following
-> ![Table](https://i.postimg.cc/wxJ1rZHB/tablee.png)
+> ![Table](https://ibb.co/mB2rX2R)
 4. Open the terminal and make sure that the current directory includes the code  
 5. Run the code by the following command
 > python <"code_name.py"> -i <"inputrepository"> -o <"outputrepository"> -w <"window size"> -s <"score threshold">  
