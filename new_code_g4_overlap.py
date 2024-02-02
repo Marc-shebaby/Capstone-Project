@@ -104,7 +104,7 @@ def get_result(pos_of_mut,x,g,index,cds_loc):
                            get_seq=li[for_w].strip()                 
                            gt_ln=destination                     
                            if gt_ln+3>=len(get_seq):
-                               print("*The sequence that contains the SNP is: "+"\"%s\""%get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln]+get_seq[gt_ln+2]+get_seq[gt_ln+3]) 
+                               print("*The sequence that contains the SNP is: "+"\"%s\""%get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln]) #+get_seq[gt_ln+2]+get_seq[gt_ln+3]) 
                            else:
                                print("*The sequence that contains the SNP is: "+get_seq[gt_ln-2]+get_seq[gt_ln-1]+"\"%s\""%get_seq[gt_ln]+get_seq[gt_ln+1]+get_seq[gt_ln+2])
                        elif destination==use:
