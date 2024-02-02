@@ -86,13 +86,15 @@ def get_result(pos_of_mut,x,g,index,cds_loc):
                    elif destination>0:
                        distance=distance+destination
                        use=i
-                       if destination<use:
-                            if use+destination+3 >= len(l):
-                                print("*The sequence that contains the SNP is: "+ l[use+destination-3]+l[use+destination-2]+ "{!r}".format(l[use+destination-1]))
-                            else:
-                                print("*The sequence that contains the SNP is: "+ l[use+destination-3]+l[use+destination-2]+ "{!r}".format(l[use+destination-1])+l[use+destination]+l[use+destination+1]+l[use+destination+2])
+                       if destination+use< len(l[0:]):
+                            l=list(l)
+                            l[use+destination]=f'"{l[use+destination]}"'
+                            seq=' '.join(l)
+                            print("*The sequence that contains the SNP is:"+seq)
+                      
+                         
                        
-                       elif destination>use:
+                       elif destination+use > len(l[0:]):
                            for_w=m
                            destination=destination-(len(l)-use) # len(l)-(use): subtracting the index reached from the size of the current line to obtain the number of bases that will be traveled after moving forward on the line.
                            for_w=for_w+1
