@@ -497,15 +497,15 @@ This part below of the code creates a directory where the results for G4 hunter 
             print ("true",DIR)
             flag=True
     if flag==True:
-        shutil.rmtree(outputrepository+"\\"+DIR+"\\")
-        os.makedirs(outputrepository+"\\"+DIR+"\\", mode=0o777)        #
+        shutil.rmtree(outputrepository+"/"+DIR+"/")
+        os.makedirs(outputrepository+"/"+DIR+"/", mode=0o777)        #
         print ('\033[1m' +"\n \t Re-evaluation of G-quadruplex propensity with G4Hunter " +'\033[0;0m')
         print ("\n#####################################")
         print ("#    New Results directory Created  #")
         print ("#####################################\n")
     else:
         DIR="Results"
-        os.makedirs(outputrepository+"\\"+DIR+"\\", mode=0o777)        #
+        os.makedirs(outputrepository+"/"+DIR+"/", mode=0o777)        #
         print ("\n########################################################################")
         print ("#                            Results directory Created                 #")
         print("########################################################################\n")
@@ -515,15 +515,15 @@ This part below of the code creates a directory where the results for G4 hunter 
     for file in files:
   # Construct the full file path
         file_path = os.path.join(inputrepository, file)
-        fname=file_path.split("\\")[-1]
+        fname=file_path.split("/")[-1]
         filefasta=fname.split(".")
         filein=open(file_path,"r")
 
         print ("\n Input file:", '\033[1m' + filefasta[0]+'\033[0;0m')
         # directory of output files
         namee = os.path.basename(filefasta[0])
-        Res1file= open (outputrepository+"/"+DIR+"/"+"-G4_sequences"+".txt", "a")
-        Res2file= open (outputrepository+"/"+DIR+"/"+"-G4_Merged.txt", "a")
+        Res1file= open (outputrepository+"/"+DIR+"/"+"G4_sequences"+".txt", "a")
+        Res2file= open (outputrepository+"/"+DIR+"/"+"G4_Merged.txt", "a")
     #=========================================
     
     
@@ -613,7 +613,7 @@ This part below of the code creates a directory where the results for G4 hunter 
         os.rename(filename, new_filename)
 
     # call read_g
-    G_overlap=outputrepository+"/Results/-G4_Merged.txt"
+    G_overlap=outputrepository+"/Results/G4_Merged.txt"
 
     if os.path.abspath(G_overlap):
         absolute_path = os.path.abspath(G_overlap)
